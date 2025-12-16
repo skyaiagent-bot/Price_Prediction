@@ -17,7 +17,7 @@ def add_technical_indicators(data:pd.DataFrame)->pd.DataFrame:
     data['SMA_50'] = ta.SMA(data['Close'], timeperiod=50)
     data['EMA_20'] = ta.EMA(data['Close'], timeperiod=20)
     data['EMA_50'] = ta.EMA(data['Close'], timeperiod=50)
-
+ 
     # Relative Strength Index (RSI)
     data['RSI_14'] = ta.RSI(data['Close'], timeperiod=14)
 
