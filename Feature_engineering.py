@@ -12,25 +12,26 @@ def add_technical_indicators(data:pd.DataFrame)->pd.DataFrame:
     Returns:
     pd.DataFrame: DataFrame with added technical indicators.
     """
+    data = pd.DataFrame(data)
     # Moving Averages
-    data['SMA_20'] = ta.SMA(data['Close'], timeperiod=20)
-    data['SMA_50'] = ta.SMA(data['Close'], timeperiod=50)
-    data['EMA_20'] = ta.EMA(data['Close'], timeperiod=20)
-    data['EMA_50'] = ta.EMA(data['Close'], timeperiod=50)
+    data['SMA_20'] = ta.SMA(data['Close'].values.reshape(-1), timeperiod=20)
+    data['SMA_50'] = ta.SMA(data['Close'].values.reshape(-1), timeperiod=50)
+    data['EMA_20'] = ta.EMA(data['Close'].values.reshape(-1), timeperiod=20)
+    data['EMA_50'] = ta.EMA(data['Close'].values.reshape(-1), timeperiod=50)
  
     # Relative Strength Index (RSI)
-    data['RSI_14'] = ta.RSI(data['Close'], timeperiod=14)
+    data['RSI_14'] = ta.RSI(data['Close'].values.reshape(-1), timeperiod=14)
 
     # Bollinger Bands
-    upperband, middleband, lowerband = ta.BBANDS(data['Close'], timeperiod=20, nbdevup=2, nbdevdn=2, matype=0)
+    upperband, middleband, lowerband = ta.BBANDS(data['Close'].values.reshape(-1), timeperiod=20, nbdevup=2, nbdevdn=2, matype=0)
     data['BB_upper'] = upperband
     data['BB_middle'] = middleband
     data['BB_lower'] = lowerband
 
     # MACD
-    macd, macdsignal, macdhist = ta.MACD(data['Close'], fastperiod=12, slowperiod=26, signalperiod=9)
+    macd, macdsignal, macdhist = ta.MACD(data['Close'].values.reshape(-1), fastperiod=12, slowperiod=26, signalperiod=9)
     data['MACD'] = macd
     data['MACD_signal'] = macdsignal
     data['MACD_hist'] = macdhist
-
+    data = data.dropna(axis=0)
     return data
