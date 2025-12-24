@@ -29,7 +29,7 @@ def trend_finder(df:pd.DataFrame,windows=3,threshold=0.02):
             trend.append(0)
     
     
-    df['trend'] = trend
+    df['Trend'] = trend
     
     
     return df
