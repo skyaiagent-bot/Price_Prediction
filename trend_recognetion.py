@@ -46,9 +46,9 @@ def identify_entry_points(df:pd.DataFrame,trend_confirmation=1,entry_after_confi
                     df.loc[df.index[i],'Entry_signal'] = 1
                     df.loc[df.index[i],'Entry_type'] = 'long'
         
-        elif df['trend'].iloc[i] == -1:  # روند نزولی
+        elif df['Trend'].iloc[i] == -1:  # روند نزولی
             if i >= trend_confirmation + entry_after_confirmation:
-                if (df['trend'].iloc[i-trend_confirmation+1:i+1] == -1).all():
+                if (df['Trend'].iloc[i-trend_confirmation+1:i+1] == -1).all():
                     df.loc[df.index[i], 'Entry_signal'] = 1
                     df.loc[df.index[i], 'Entry_type'] = 'short'
 
