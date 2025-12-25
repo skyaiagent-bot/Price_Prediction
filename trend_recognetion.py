@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
 
-def trend_finder(df:pd.DataFrame,windows=3,threshold=0.2):
+def trend_finder(df:pd.DataFrame,windows=3,candel_type_category=[0,1,2]):
     df["Candle_type"] = np.select(
         [df['Close']>df['Open'],df['Close']<df["Open"]],
         [1,-1],
@@ -30,9 +30,14 @@ def trend_finder(df:pd.DataFrame,windows=3,threshold=0.2):
         
         else :
             trend.append(0)
-    
+        
     df['Trend'] = trend
+    return df
     
+    
+
+def Candel_type_cat(df:pd.DataFrame):
+
     candle_type_category = []
     for i in range(len(df)):
     
@@ -45,7 +50,7 @@ def trend_finder(df:pd.DataFrame,windows=3,threshold=0.2):
         elif df['Candle_body'].iloc[i] >= df['ATR'].iloc[i] * 1.0 :
             candle_type_category.append(2)
     
-    df['candle_type_category'] = candle_type_category
+    df['Candle_type_category'] = candle_type_category
 
     return df
 

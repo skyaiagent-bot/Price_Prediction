@@ -5,14 +5,14 @@ from trend_recognetion import trend_finder,identify_entry_points
 
 
 
-df = read_data(symbol='EURUSD=X',start="2010-01-01",interval='1d')
+df = read_data(symbol='EURUSD=X',start="2010-01-01",interval="1d")
 df = add_technical_indicators(df)
 df = preprocess_data(df)
 df = trend_finder(df)
 df = identify_entry_points(df)
 
 
-print(df['candle_type_category'].head(10))
+
 
 
 
