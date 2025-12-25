@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
 
-def trend_finder(df:pd.DataFrame,windows=2,candel_type_category=0):
+def trend_finder(df:pd.DataFrame,windows=3,candel_type_category=0):
     df["Candle_type"] = np.select(
         [ df['Close'] > df['Open'] , df['Close'] < df["Open"]],
         [1,-1],
@@ -40,9 +40,10 @@ def trend_finder(df:pd.DataFrame,windows=2,candel_type_category=0):
 
         windows_size = df['Candle_type_category'].iloc[i-windows+1:i+1]
 
-        if ( windows_type == 1 ).all() and ( windows_size >= candel_type_category ).all():
+        if ( windows_type == 1 ).all() and ( windows_size > candel_type_category ).all():
             trend.append(1)
-        elif ( windows_type == -1 ).all() and ( windows_size >= candel_type_category ).all():
+        
+        elif ( windows_type == -1 ).all() and ( windows_size > candel_type_category ).all():
             trend.append(-1)
         
         else :
@@ -55,7 +56,7 @@ def trend_finder(df:pd.DataFrame,windows=2,candel_type_category=0):
     
 
 
-def identify_entry_points(df:pd.DataFrame,trend_confirmation=0,entry_after_confirmation=0):
+def identify_entry_points(df:pd.DataFrame,trend_confirmation=1,entry_after_confirmation=0):
 
     df['Entry_signal'] = 0
     df['Entry_type'] = None

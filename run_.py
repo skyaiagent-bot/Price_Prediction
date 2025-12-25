@@ -2,6 +2,7 @@ from Reading_Price import read_data
 from Feature_engineering import add_technical_indicators
 from Data_Prepration import preprocess_data
 from trend_recognetion import trend_finder
+import numpy as np
 
 
 
@@ -11,10 +12,8 @@ df = preprocess_data(df)
 df = trend_finder(df)
 
 
-print(df[['Candle_type','Candle_type_category','Trend']].head(50))
+print(df['Trend'].value_counts())
 
 
-
-
-
-
+for i in range(len(df)):
+    pass
