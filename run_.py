@@ -12,6 +12,8 @@ df = trend_finder(df)
 df = identify_entry_points(df)
 
 
+print(df['candle_type_category'].head(10))
+
 
 
 
