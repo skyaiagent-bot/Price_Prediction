@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
 
-def trend_finder(df:pd.DataFrame,windows=3,threshold=0.02):
+def trend_finder(df:pd.DataFrame,windows=3,threshold=0.2):
     df["Candle_type"] = np.select(
         [df['Close']>df['Open'],df['Close']<df["Open"]],
         [1,-1],
@@ -9,7 +9,7 @@ def trend_finder(df:pd.DataFrame,windows=3,threshold=0.02):
     )
     # candle body size
     df['Candle_body'] = abs(df['Close'] - df['Open'])
-    df['Candle_size'] = df['Candle_body']/df['Candle_body'].median()
+    df['Candle_size'] = df['Candle_body']/df['Candle_body'].max()
     trend = []
 
     for i in range(len(df)):
@@ -28,10 +28,22 @@ def trend_finder(df:pd.DataFrame,windows=3,threshold=0.02):
         else :
             trend.append(0)
     
+        df['Trend'] = trend
     
-    df['Trend'] = trend
+    candle_type_category = []
+    for i in range(len(df)):
     
+        if df['Candle_body'].iloc[i] < df['ATR'].iloc[i] * 0.3:
+            candle_type_category.append(-1)
+        elif df['ATR'].iloc[i] * 0.3 <= df['Candle_body'].iloc[i] < df['ATR'].iloc[i] * 0.7:
+            candle_type_category.append(0)
+        elif df['ATR'].iloc[i] * 1.0 > df['Candle_body'].iloc[i] >= df['ATR'].iloc[i] * 0.7 :
+            candle_type_category.append(1)
+        elif df['Candle_body'].iloc[i] >= df['ATR'].iloc[i] * 1.0 :
+            candle_type_category.append(2)
     
+    df['candle_type_category'] = candle_type_category
+
     return df
 
 def identify_entry_points(df:pd.DataFrame,trend_confirmation=1,entry_after_confirmation=0):
@@ -49,8 +61,16 @@ def identify_entry_points(df:pd.DataFrame,trend_confirmation=1,entry_after_confi
         elif df['Trend'].iloc[i] == -1:  # روند نزولی
             if i >= trend_confirmation + entry_after_confirmation:
                 if (df['Trend'].iloc[i-trend_confirmation+1:i+1] == -1).all():
-                    df.loc[df.index[i], 'Entry_signal'] = 1
+                    df.loc[df.index[i], 'Entry_signal'] = -1
                     df.loc[df.index[i], 'Entry_type'] = 'short'
 
     
     return df
+
+
+def identify_exit_point(df:pd.DataFrame,trend_confrimation=1,exit_after_confrimation = 0):
+    for i in range(len(df)):
+        pass
+
+    pass
+    
