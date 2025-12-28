@@ -56,31 +56,30 @@ def trend_finder(df:pd.DataFrame,windows=3,candel_type_category=0):
     
 
 
-def identify_entry_points(df:pd.DataFrame,trend_confirmation=1,entry_after_confirmation=0):
-
-    df['Entry_signal'] = 0
+def identify_entry_points(df: pd.DataFrame):
+    df['Entry_signal'] = None
+    df["Exit_signal"] = None
     df['Entry_type'] = None
 
-    for i in range(len(df)):
-        if df['Trend'].iloc[i] == 1:
-            if i >= trend_confirmation + entry_after_confirmation:
-                if(df['Trend'].iloc[i-trend_confirmation+1:i+1]==1).all():
-                    df.loc[df.index[i],'Entry_signal'] = 1
-                    df.loc[df.index[i],'Entry_type'] = 'long'
-        
-        elif df['Trend'].iloc[i] == -1:  # روند نزولی
-            if i >= trend_confirmation + entry_after_confirmation:
-                if (df['Trend'].iloc[i-trend_confirmation+1:i+1] == -1).all():
-                    df.loc[df.index[i], 'Entry_signal'] = -1
-                    df.loc[df.index[i], 'Entry_type'] = 'short'
+    for i in range(len(df)-1):  # تا ایندکس آخر منهای یک
+        if df['Candle_type'].iloc[i] == 1 and df['Candle_type_category'].iloc[i] >= 0:
+            df.loc[i, 'Entry_signal'] = 1
+            df.loc[i+1, "Exit_signal"] = 1
+            df.loc[i, 'Entry_type'] = 'Long'
 
-    
+        elif df['Candle_type'].iloc[i] == -1 and df['Candle_type_category'].iloc[i] >= 0:
+            df.loc[i, 'Entry_signal'] = -1
+            df.loc[i+1, "Exit_signal"] = -1
+            df.loc[i, 'Entry_type'] = 'Short'
+        else:
+            df.loc[i, 'Entry_signal'] = 0
+            df.loc[i+1, "Exit_signal"] = 0
+            df.loc[i, 'Entry_type'] = 'Range'
+
     return df
+# def identify_exit_point(df:pd.DataFrame,trend_confrimation=1,exit_after_confrimation = 0):
+#     for i in range(len(df)):
+#         pass
 
-
-def identify_exit_point(df:pd.DataFrame,trend_confrimation=1,exit_after_confrimation = 0):
-    for i in range(len(df)):
-        pass
-
-    pass
+#     pass
     
