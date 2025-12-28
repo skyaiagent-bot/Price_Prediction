@@ -77,9 +77,5 @@ def identify_entry_points(df: pd.DataFrame):
             df.loc[i, 'Entry_type'] = 'Range'
 
     return df
-# def identify_exit_point(df:pd.DataFrame,trend_confrimation=1,exit_after_confrimation = 0):
-#     for i in range(len(df)):
-#         pass
-
-#     pass
+#
     

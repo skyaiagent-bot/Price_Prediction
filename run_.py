@@ -14,9 +14,6 @@ df = preprocess_data(df)
 df = trend_finder(df)
 df = identify_entry_points(df)
 
-# print(df.describe)
-# print(df.info())
-# print(df.head(40))
 
 
 plt.figure(figsize=(10, 8))  # تنظیم اندازه تصویر
