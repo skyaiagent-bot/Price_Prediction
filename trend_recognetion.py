@@ -15,13 +15,13 @@ def trend_finder(df:pd.DataFrame,windows=3,candel_type_category=0):
     for i in range(len(df)):
     
         if df['Candle_body'].iloc[i] < df['ATR'].iloc[i] * 0.3:
-            candle_type_category.append(-1)
-        elif df['ATR'].iloc[i] * 0.3 <= df['Candle_body'].iloc[i] < df['ATR'].iloc[i] * 0.7 :
             candle_type_category.append(0)
-        elif df['ATR'].iloc[i] * 1.0 > df['Candle_body'].iloc[i] >= df['ATR'].iloc[i] * 0.7 :
+        elif df['ATR'].iloc[i] * 0.3 <= df['Candle_body'].iloc[i] < df['ATR'].iloc[i] * 0.7 :
             candle_type_category.append(1)
-        elif df['Candle_body'].iloc[i] >= df['ATR'].iloc[i] * 1.0 :
+        elif df['ATR'].iloc[i] * 1.0 > df['Candle_body'].iloc[i] >= df['ATR'].iloc[i] * 0.7 :
             candle_type_category.append(2)
+        elif df['Candle_body'].iloc[i] >= df['ATR'].iloc[i] * 1.0 :
+            candle_type_category.append(3)
     
     df['Candle_type_category'] = candle_type_category
     
@@ -56,26 +56,52 @@ def trend_finder(df:pd.DataFrame,windows=3,candel_type_category=0):
     
 
 
-def identify_entry_points(df: pd.DataFrame):
-    df['Entry_signal'] = None
-    df["Exit_signal"] = None
-    df['Entry_type'] = None
+# def identify_entry_points(df: pd.DataFrame): OLD VERSION
+#     df['Entry_signal'] = None
+#     df["Exit_signal"] = None
+#     df['Entry_type'] = None
+# 
+#     for i in range(len(df)-1):  # تا ایندکس آخر منهای یک
+#         if df['Candle_type'].iloc[i] == 1 and df['Candle_type_category'].iloc[i] >= 0:
+#             df.loc[i, 'Entry_signal'] = 1
+#             df.loc[i+1, "Exit_signal"] = 1
+#             df.loc[i, 'Entry_type'] = 'Long'
 
-    for i in range(len(df)-1):  # تا ایندکس آخر منهای یک
-        if df['Candle_type'].iloc[i] == 1 and df['Candle_type_category'].iloc[i] >= 0:
-            df.loc[i, 'Entry_signal'] = 1
-            df.loc[i+1, "Exit_signal"] = 1
-            df.loc[i, 'Entry_type'] = 'Long'
+#         elif df['Candle_type'].iloc[i] == -1 and df['Candle_type_category'].iloc[i] >= 0:
+#             df.loc[i, 'Entry_signal'] = -1
+#             df.loc[i+1, "Exit_signal"] = -1
+#             df.loc[i, 'Entry_type'] = 'Short'
+#         else:
+#             df.loc[i, 'Entry_signal'] = 0
+#             df.loc[i+1, "Exit_signal"] = 0
+#             df.loc[i, 'Entry_type'] = 'Range'
 
-        elif df['Candle_type'].iloc[i] == -1 and df['Candle_type_category'].iloc[i] >= 0:
-            df.loc[i, 'Entry_signal'] = -1
-            df.loc[i+1, "Exit_signal"] = -1
-            df.loc[i, 'Entry_type'] = 'Short'
+#     return df
+#
+
+
+def identify_trend(df:pd.DataFrame):
+    df['Candle_weight'] = df['Candle_type'] * df['Candle_type_category']
+    x = []
+    df['Movement_Trend'] = None
+    """
+    short = -1
+    range = 0
+    Long = 1
+    """
+    for i in range(len(df)-3):
+        if df['Candle_weight'].iloc[i:i+3].sum() >= 2 :
+         
+            df.loc[i:i+3,'Movement_Trend' ] = 1
+
+        elif df['Candle_weight'].iloc[i:i+3].sum() <= -2 :
+        
+            df.loc[i:i+3,'Movement_Trend' ] = -1
+        
         else:
-            df.loc[i, 'Entry_signal'] = 0
-            df.loc[i+1, "Exit_signal"] = 0
-            df.loc[i, 'Entry_type'] = 'Range'
+            
+            df.loc[i:i+3,'Movement_Trend' ] = 0
+        
+   
 
     return df
-#
-    
