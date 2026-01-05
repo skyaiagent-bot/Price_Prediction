@@ -15,11 +15,15 @@ df = preprocess_data(df)
 df = trend_finder(df)
 df = identify_trend(df)
 
-print(df[:50])
 
 
+print(df.info())
+print(df.head())
+
+
+# df.to_csv('rrr')
 
 # plt.figure(figsize=(10, 8))  # تنظیم اندازه تصویر
-# sns.heatmap(df.drop(columns='Entry_type').corr(), annot=True, cmap="coolwarm")  # رسم نقشه حرارتی برای ماتریس همبستگی داده‌ها
+# sns.heatmap(df.corr(), annot=True, cmap="coolwarm")  # رسم نقشه حرارتی برای ماتریس همبستگی داده‌ها
 # plt.show()
 

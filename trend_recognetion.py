@@ -8,20 +8,22 @@ def trend_finder(df:pd.DataFrame,windows=3,candel_type_category=0):
         default=0
     )
     # candle body size
-    df['Candle_body'] = abs(df['Close'] - df['Open'])
+    df['Candle_size'] = abs(df['High'] - df['Low'])
 
 
     candle_type_category = []
     for i in range(len(df)):
     
-        if df['Candle_body'].iloc[i] < df['ATR'].iloc[i] * 0.3:
+        if df['Candle_size'].iloc[i] < df['ATR'].iloc[i] * 0.2:
             candle_type_category.append(0)
-        elif df['ATR'].iloc[i] * 0.3 <= df['Candle_body'].iloc[i] < df['ATR'].iloc[i] * 0.7 :
+        elif df['ATR'].iloc[i] * 0.2 <= df['Candle_size'].iloc[i] < df['ATR'].iloc[i] * 0.4 :
             candle_type_category.append(1)
-        elif df['ATR'].iloc[i] * 1.0 > df['Candle_body'].iloc[i] >= df['ATR'].iloc[i] * 0.7 :
+        elif df['ATR'].iloc[i] * 0.7 > df['Candle_size'].iloc[i] > df['ATR'].iloc[i] * 0.4 :
             candle_type_category.append(2)
-        elif df['Candle_body'].iloc[i] >= df['ATR'].iloc[i] * 1.0 :
-            candle_type_category.append(3)
+        elif 0.9 > df['Candle_size'].iloc[i] >= df['ATR'].iloc[i] * 0.7 :
+            candle_type_category.append(3)        
+        elif  df['Candle_size'].iloc[i] >= df['ATR'].iloc[i] * 0.9 :
+            candle_type_category.append(4)
     
     df['Candle_type_category'] = candle_type_category
     
@@ -82,14 +84,19 @@ def trend_finder(df:pd.DataFrame,windows=3,candel_type_category=0):
 
 def identify_trend(df:pd.DataFrame):
     df['Candle_weight'] = df['Candle_type'] * df['Candle_type_category']
-    x = []
+    df['Trend_Strength'] = None
     df['Movement_Trend'] = None
+    df
     """
     short = -1
     range = 0
     Long = 1
     """
     for i in range(len(df)-3):
+        x  = df['Candle_weight'].iloc[i:i+3].sum()
+
+        df.loc[i,'Trend_Strength'] = x
+
         if df['Candle_weight'].iloc[i:i+3].sum() >= 2 :
          
             df.loc[i:i+3,'Movement_Trend' ] = 1
@@ -101,7 +108,5 @@ def identify_trend(df:pd.DataFrame):
         else:
             
             df.loc[i:i+3,'Movement_Trend' ] = 0
-        
-   
-
+           
     return df
