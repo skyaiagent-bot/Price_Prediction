@@ -22,6 +22,8 @@ def add_technical_indicators(data:pd.DataFrame)->pd.DataFrame:
     data['EMA50_slope'] = data['EMA_50'] - data['EMA_50'].shift(5)
     data['MA_slope'] = data['SMA_50'] - data['SMA_50'].shift(5)
     data['ATR'] = ta.ATR(high=data['High'].values.reshape(-1),low=data['Low'].values.reshape(-1),close=data['Close'].values.reshape(-1),timeperiod=14) 
+
+    data['EMA20_slope'] = data['EMA_20']  - data['EMA_20'].shift(3)
     
     data['ADX'] = ta.ADX(data['High'].values.reshape(-1), data['Low'].values.reshape(-1), data['Close'].values.reshape(-1), timeperiod=14)
     data['PLUS_DI'] = ta.PLUS_DI(data['High'].values.reshape(-1), data['Low'].values.reshape(-1), data['Close'].values.reshape(-1), timeperiod=14)
@@ -40,6 +42,8 @@ def add_technical_indicators(data:pd.DataFrame)->pd.DataFrame:
     data['MACD'] = macd
     data['MACD_signal'] = macdsignal
     data['MACD_hist'] = macdhist
+    data['Body'] = abs(data['Close'] - data['Open'])
+    data['Body_avg'] = data['Body'].rolling(20).mean()
     # conditions = [
     #     (data['ADX'] > 18) &
     #     (data['PLUS_DI'] > data['MINUS_DI']) &
@@ -102,11 +106,11 @@ def add_technical_indicators(data:pd.DataFrame)->pd.DataFrame:
 # Uptrend
 
 
-def bulish_bearish(data):
+def bullish_bearish(data):
     conditions = [
-    (data['Close'] > data['EMA_50']) & (data['EMA50_slope'] > 0),
-    (data['Close'] < data['EMA_50']) & (data['EMA50_slope'] < 0)        
+    (data['Close'].values.reshape(-1) > data['EMA_50'].values.reshape(-1)) & (data['EMA50_slope'] > 0),
+    (data['Close'].values.reshape(-1) < data['EMA_50'].values.reshape(-1)) & (data['EMA50_slope'] < 0)        
     ]
-    choices  = ['Billish','Bearish']
-    data['Daily_Bias'] = np.select(conditions=conditions,choices=choices,default="Neutral")
+    choices  = ['Bullish','Bearish']
+    data['Daily_Bias'] = np.select(conditions,choices,default="Neutral")
     return data
