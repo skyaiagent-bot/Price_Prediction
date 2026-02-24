@@ -96,7 +96,7 @@ def add_technical_indicators(data:pd.DataFrame)->pd.DataFrame:
     'Pullback_in_Uptrend',
     'Rally_in_Downtrend'
     ]
-
+    data['Swing_Low'] = data['Low'].rolling(5).min()
 
     data['Market_Regime_LR'] = np.select(conditions, choices, default='Range')
 
@@ -113,4 +113,5 @@ def bullish_bearish(data):
     ]
     choices  = ['Bullish','Bearish']
     data['Daily_Bias'] = np.select(conditions,choices,default="Neutral")
+    data = data.dropna()
     return data

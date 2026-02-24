@@ -33,7 +33,7 @@ df_4h.index = pd.to_datetime(df_4h.index)
 # print(df_daily.columns)
 
 
-df_4h['Daily_Bias'] = df_daily['Daily_Bias'].reindex(df_4h.index.floor('D'),method='ffill')
+df_4h['Daily_Bias'] = df_daily['Daily_Bias'].reindex(df_4h.index.floor('D'),method='ffill').values
 
 
 
@@ -61,38 +61,86 @@ df_4h['H4_Pullback'] = np.where(
 
 
 df_1h['H4_Pullback'] = df_4h['H4_Pullback'].reindex(
-    df_1h.index.floor('4H'),
+    df_1h.index.floor('4h'),
     method='ffill'
-)
+).values
 
 df_1h['Daily_Bias'] = df_daily['Daily_Bias'].reindex(
     df_1h.index.floor('D'),
     method='ffill'
-)
-
-# print(df_4h['H4_Pullback'].value_counts())
-# print(df_4h['Daily_Bias'].value_counts())
+).values
 
 
-print(df_4h['H4_Pullback'].value_counts())
-
-print('-'*20)
-print("Bullish H4 count:",
-      (df_4h['Daily_Bias'] == 'Bullish').sum())
 
 
-print(len(df_daily))
-print(len(df_4h))
+
 
 
 long_entry = (
     (df_1h['Daily_Bias'] == 'Bullish') &
     (df_1h['H4_Pullback'] == 'Long_Pullback') &
-    (df_1h['Close'].values.reshape(-1) > df_1h['High'].values.reshape(-1).shift(1)) &
-    (df_1h['EMA20_slope'].values.reshape(-1) > 0) &
-    (df_1h['Body'].values.reshape(-1) > df_1h['Body_avg'].values.reshape(-1))
+    (df_1h['Close'] > df_1h['High'].shift(1)) &
+    (df_1h['EMA20_slope'] > 0)  &
+    (df_1h['Body'] > df_1h['Body_avg'])
+)
+
+
+print(type(df_1h['Close']))
+
+df_1h['Entry_Signal'] = np.where(long_entry, 'Long', 'None')
+
+# print(len(df_4h))
+# print(len(df_1h))
+# print(df_1h[['Daily_Bias','H4_Pullback']].tail())
+
+long_entry = (
+    (df_1h['Daily_Bias'] == 'Bullish') &
+    (df_1h['H4_Pullback'] == 'Long_Pullback') &
+    (df_1h['Close'] > df_1h['High'].shift(1)) &
+    (df_1h['EMA20_slope'] > 0) &
+    (df_1h['Body'] > df_1h['Body_avg'])
 )
 
 df_1h['Entry_Signal'] = np.where(long_entry, 'Long', 'None')
 
-print(df_1h['Entry_Signal'].value_counts())
+# print(df_1h['Entry_Signal'].value_counts())
+
+trades = df_1h[df_1h['Entry_Signal'] != 'None'].copy()
+
+
+
+results = []
+for idx in trades.index:
+    direction = df_1h.loc[idx,'Entry_Signal']
+    entry = df_1h.loc[idx,'Entry_Price']
+    sl = df_1h.loc[idx,'SL']
+    tp = df_1h.loc[idx,'TP']
+
+    future_data = df_1h.loc[idx:].iloc[1:]
+    outcome = None
+    for i , row in future_data.iterrows():
+        if direction == 'Long':
+            if row['Low'] <= sl:
+                outcome = -1
+                break
+            
+            if row['High'] >= tp:
+                outcome = 2 
+                break
+        
+        if direction == 'Short':
+
+            if row['High'] >= sl:
+                outcome = -1
+                break
+
+            if row['Low'] <= tp:
+                outcome = 2 
+                break
+    if outcome == None:
+        outcome = 0
+    
+    results.append(outcome)
+
+
+trades['Outcome_R'] = results
