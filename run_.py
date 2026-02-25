@@ -41,12 +41,12 @@ df_4h['Daily_Bias'] = df_daily['Daily_Bias'].reindex(df_4h.index.floor('D'),meth
 
 long_pullback = (
     (df_4h['Daily_Bias'] == 'Bullish') &
-    (df_4h['Close'].values.reshape(-1) < df_4h['EMA_20'].values.reshape(-1))
+    (df_4h['Close'].values.reshape(-1) < df_4h['EMA_50'].values.reshape(-1))
 )
 
 short_pullback = (
     (df_4h['Daily_Bias'] == 'Bearish') &
-    (df_4h['Close'].values.reshape(-1) > df_4h['EMA_20'].values.reshape(-1))
+    (df_4h['Close'].values.reshape(-1) > df_4h['EMA_50'].values.reshape(-1))
 )
 
 df_4h['H4_Pullback'] = np.where(
@@ -79,9 +79,12 @@ df_1h['Daily_Bias'] = df_daily['Daily_Bias'].reindex(
 long_entry = (
     (df_1h['Daily_Bias'] == 'Bullish') &
     (df_1h['H4_Pullback'] == 'Long_Pullback') &
-    (df_1h['Close'] > df_1h['High'].shift(1)) &
+    (df_1h['Close'] > df_1h['High'].rolling(5).max().shift(1)) &
     (df_1h['EMA20_slope'] > 0)  &
-    (df_1h['Body'] > df_1h['Body_avg'])
+    (df_1h['Body'] > df_1h['Body_avg']) &
+    (df_1h['RSI_14'] > 50) &
+    (df_1h['RSI_14'].shift(1) <= 50) &
+    (abs(df_1h['Close'] - df_1h['EMA_20']) < 1.5 * df_1h['ATR'])
 )
 
 
@@ -93,21 +96,45 @@ df_1h['Entry_Signal'] = np.where(long_entry, 'Long', 'None')
 # print(len(df_1h))
 # print(df_1h[['Daily_Bias','H4_Pullback']].tail())
 
-long_entry = (
-    (df_1h['Daily_Bias'] == 'Bullish') &
-    (df_1h['H4_Pullback'] == 'Long_Pullback') &
-    (df_1h['Close'] > df_1h['High'].shift(1)) &
-    (df_1h['EMA20_slope'] > 0) &
-    (df_1h['Body'] > df_1h['Body_avg'])
-)
 
 df_1h['Entry_Signal'] = np.where(long_entry, 'Long', 'None')
 
 # print(df_1h['Entry_Signal'].value_counts())
 
+
+
+df_1h['Entry_Price'] = df_1h['Open'].shift(-1)
+
+# Swing levels
+df_1h['Swing_Low'] = df_1h['Low'].rolling(5).min()
+df_1h['Swing_High'] = df_1h['High'].rolling(5).max()
+
+# Stop loss
+df_1h['SL'] = np.where(
+    df_1h['Entry_Signal'] == 'Long',
+    df_1h['Swing_Low'],
+    np.where(
+        df_1h['Entry_Signal'] == 'Short',
+        df_1h['Swing_High'],
+        np.nan
+    )
+)
+
+# Risk (distance)
+df_1h['Risk'] = abs(df_1h['Entry_Price'] - df_1h['SL'])
+
+# Take profit (2R model)
+df_1h['TP'] = np.where(
+    df_1h['Entry_Signal'] == 'Long',
+    df_1h['Entry_Price'] + (1.5 * df_1h['Risk']),
+    np.where(
+        df_1h['Entry_Signal'] == 'Short',
+        df_1h['Entry_Price'] - (1.5 * df_1h['Risk']),
+        np.nan
+    )
+)
+
 trades = df_1h[df_1h['Entry_Signal'] != 'None'].copy()
-
-
 
 results = []
 for idx in trades.index:
@@ -125,7 +152,7 @@ for idx in trades.index:
                 break
             
             if row['High'] >= tp:
-                outcome = 2 
+                outcome = 1.5
                 break
         
         if direction == 'Short':
@@ -135,7 +162,7 @@ for idx in trades.index:
                 break
 
             if row['Low'] <= tp:
-                outcome = 2 
+                outcome = 1.5
                 break
     if outcome == None:
         outcome = 0
@@ -144,3 +171,16 @@ for idx in trades.index:
 
 
 trades['Outcome_R'] = results
+
+total_trades = len(trades)
+wins = (trades['Outcome_R'] > 0 ).sum()
+losses = (trades['Outcome_R'] < 0 ).sum()
+
+win_rate = wins / total_trades if total_trades > 0 else 0
+expectancy = trades['Outcome_R'].mean() if total_trades > 0 else 0
+
+print("Total trades:", total_trades)
+print("Wins:", wins)
+print("Losses:", losses)
+print("Win rate:", round(win_rate, 3))
+print("Expectancy (R):", round(expectancy, 3))
